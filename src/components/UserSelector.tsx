@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { User } from '../types/User';
 
 type Props = {
@@ -14,10 +14,26 @@ export const UserSelector: React.FC<Props> = ({
   onUserSelect,
 }) => {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
 
   return (
     <div
       data-cy="UserSelector"
+      ref={containerRef}
       className={classNames('dropdown', {
         'is-active': open,
       })}
@@ -29,7 +45,6 @@ export const UserSelector: React.FC<Props> = ({
           aria-haspopup="true"
           aria-controls="dropdown-menu"
           onClick={() => setOpen(prev => !prev)}
-          onBlur={() => setOpen(false)}
         >
           <span>{selectedUser?.name || 'Choose a user'}</span>
 
